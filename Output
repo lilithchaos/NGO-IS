@@ -1,0 +1,63 @@
+/* === INITIALIZATION === */
+if (typeof InnerSelf === "function") {
+  InnerSelf("output");
+}
+
+const modifier = (text) => {
+  if (!state || !state.roll || typeof state.heat === 'undefined') {
+      return { text };
+  }
+
+  const conflictWords = ["attack","stab","destroy","break","steal","ruin","burn","smash","sabotage","shoot","punch","hit","slap","scream","yell","gun","pistol","rifle","bullet","ammo","shotgun","firearm","blast","kill","slay","blood","bleed","bleeding","gore","wound","pain","dying","die","perish","rage","anger","betray","revenge","drug","cocaine","heroin","needle","scam","theft","crime","felony","arrest","handcuffs","police","cop","murder","execution","deadly"];
+  const calmingWords = ["calm","rest","relax","meditate","sleep","comfort","hug","smile","forgive","mend","repair","protect","shelter","trust","hope","eat","drink","balance","laugh","apologize","befriend","thank","appreciate","love","pet","respect","restore","heal","help","assist","romance","affection","flirt","cuddle","care","gentle","soft","tender","kiss","reassure"];
+
+  const lowerText = text.toLowerCase();
+  const words = lowerText.split(/\s+/);
+  let conflictCount = 0;
+  let calmingCount = 0;
+
+  words.forEach(word => {
+    const fixedWord = word.replace(/^[^\w]+|[^\w]+$/g, '');
+    if (conflictWords.includes(fixedWord)) conflictCount++;
+    if (calmingWords.includes(fixedWord)) calmingCount++;
+  });
+
+  if (conflictCount > 0) {
+    state.heat += conflictCount * (state.modelIncreaseHeatImpact || 1);
+    if (conflictCount >= (state.threshholdModelIncreaseTemperature || 3)) {
+      state.storyTemperature += (state.modelIncreaseTemperatureImpact || 1);
+    }
+  }
+  if (calmingCount > 0) {
+    state.heat -= calmingCount * (state.modelDecreaseHeatImpact || 1);
+  }
+
+  /* --- 3: CLAMPING & DASHBOARD --- */
+  // Ensure Heat never goes below 0 and Temperature stays between 1 and Max
+  const maxTemp = state.maximumTemperature || 15;
+  const minTemp = state.minimumTemperature || 1;
+  const minHeat = state.minimumHeat || 0;
+
+  state.heat = Math.max(minHeat, state.heat);
+  state.storyTemperature = Math.max(minTemp, Math.min(maxTemp, state.storyTemperature));
+
+  if (state.roll?.action === info.actionCount - 1) {
+    state.memory.frontMemory = state.roll.frontMemory;
+  } else {
+    state.memory.frontMemory = "";
+  }
+
+  // Update Dashboard Card
+  let dashboardCard = storyCards.find(card => card.title === "SYSTEM: Dashboard");
+  let statusText = `HEAT: ${state.heat} | TEMP: ${state.storyTemperature} | ACTION: ${info.actionCount}`;
+  if (dashboardCard) { dashboardCard.entry = statusText; } 
+  else { addStoryCard("SYSTEM: Dashboard", statusText, "system"); }
+
+  if (typeof AutoCards === "function") {
+    const cardResult = AutoCards("output", text);
+    text = (typeof cardResult === 'object') ? cardResult.text : cardResult;
+  }
+
+  return { text };
+};
+modifier(text);
