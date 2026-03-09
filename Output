@@ -24,7 +24,9 @@ const conflictWords = [
   "duel", "skirmish", "war", "battle", "combat", "siege", "destruction",
   "devastate", "crush", "eradicate", "eliminate", "suppress", "undermine",
   "backstab", "doublecross", "terrorize", "defy", "retaliate", "suffer",
-  "torment", "scar", "bruise", "fracture", "bleed", "explode", "eruption"
+  "torment", "scar", "bruise", "fracture", "bleed", "explode", "eruption", "assault",
+"butcher", "crush", "decimate", "defile", "devastate", "extinguish", "fracture", "mutilate", 
+"pillage", "ravage", "razed", "rupture", "scourge", "strangle", "subjugate", "terrorize", "torture", "unleash", "wreck"
 ];
 
 const calmingWords = [
