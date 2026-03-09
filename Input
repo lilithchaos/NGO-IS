@@ -105,7 +105,10 @@ const modifier = (text) => {
         log(`Detected ${calmingCount} calming words (Player). Decreasing heat.`)
       }
     }
-  }
+        if (state.heat < 0) {
+          state.heat = 0
+      }
+    }
 
   state.chance = randomint(1, 100)
   if (state.chance <= state.randomExplosionChance){
