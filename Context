@@ -1,9 +1,6 @@
-InnerSelf("context");
 const modifier = (text) => {
-  // Append Author's Note from NGO if desired
-  if (state.originalAuthorsNote && state.storyTemperature > 5) {
-      text = text + "\n\n[Author's Note: " + state.originalAuthorsNote + "]";
-  }
-  return { text, stop }; 
-};
-modifier(text);
+  text = text + "\n\n" + state.originalAuthorsNote
+  return { text }
+}
+
+modifier(text)
