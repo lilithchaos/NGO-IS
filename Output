@@ -1,31 +1,136 @@
-if (typeof InnerSelf === "function") { InnerSelf("output"); }
+/* === INNERSELF OUTPUT HOOK === */
+if (typeof InnerSelf === "function") {
+  InnerSelf("output")
+}
+//DO NOT CHANGE ANYTHING HERE (Exept the conflict & calming word strings if you want to make them better)
+
+const conflictWords = [
+  "attack", "stab", "destroy", "break", "steal", "ruin", "burn", "smash", "sabotage", "disrupt",
+  "vandalize", "overthrow", "assassinate", "plunder", "rob", "ransack", "raid", "hijack",
+  "detonate", "explode", "ignite", "collapse", "demolish", "shatter", "strike", "slap",
+  "obliterate", "annihilate", "corrupt", "infect", "poison", "curse", "hex", "summon",
+  "conjure", "mutate", "provoke", "riot", "revolt", "mutiny", "rebel", "resist",
+  "intimidate", "blackmail", "manipulate", "brainwash", "lie", "cheat", "swindle",
+  "disarm", "fire", "hack", "overload", "flood", "drown", "rot", "dissolve",
+  "slaughter", "terminate", "execute", "drama", "conflict", "evil", "kill", "slay",
+  "defeat", "fight", "doom", "slice", "pain", "dying", "die", "perish", "blood",
+  "ambush", "betray", "ambush", "assault", "threaten", "menace", "harass", "bully",
+  "coerce", "extort", "torture", "maim", "wound", "injure", "cripple", "choke",
+  "strangle", "shoot", "bomb", "invade", "besiege", "conquer", "dominate",
+  "oppress", "persecute", "hunt", "track", "pursue", "capture", "kidnap",
+  "imprison", "enslave", "deceive", "frame", "scam", "counterfeit", "forge",
+  "threat", "vengeance", "revenge", "wrath", "rage", "fury", "hatred",
+  "malice", "hostile", "hostility", "aggression", "clash", "brawl",
+  "duel", "skirmish", "war", "battle", "combat", "siege", "destruction",
+  "devastate", "crush", "eradicate", "eliminate", "suppress", "undermine",
+  "backstab", "doublecross", "terrorize", "defy", "retaliate", "suffer",
+  "torment", "scar", "bruise", "fracture", "bleed", "explode", "eruption"
+];
+
+const calmingWords = [
+  "calm", "rest", "relax", "meditate", "sleep", "comfort", "hug", "smile",
+  "forgive", "mend", "repair", "plant", "sing", "dance", "celebrate",
+  "collaborate", "share", "give", "donate", "protect", "shelter",
+  "trust", "hope", "dream", "revive", "eat", "drink", "balance",
+  "cheer", "laugh", "play", "build", "bake", "craft", "cook",
+  "empathize", "apologize", "befriend", "admire", "sympathize",
+  "thank", "appreciate", "cherish", "love", "pet", "respect",
+  "restore", "guide", "teach", "learn", "daydream", "wander",
+  "explore", "discover", "reflect", "happy", "joy", "kind",
+  "breathe", "inhale", "exhale", "soothe", "heal", "recover",
+  "renew", "rejuvenate", "nurture", "care", "support", "assist",
+  "encourage", "inspire", "uplift", "comforting", "peace",
+  "serene", "tranquil", "gentle", "soft", "warm", "cozy",
+  "snuggle", "cuddle", "gratitude", "bless", "harmony",
+  "unity", "friendship", "companionship", "patience",
+  "understand", "listen", "accept", "believe", "faith",
+  "gratify", "satisfy", "content", "ease", "relief",
+  "quiet", "still", "calming", "relief", "refresh",
+  "bloom", "grow", "flourish", "thrive", "prosper",
+  "sunshine", "meadow", "breeze", "ocean", "forest",
+  "garden", "music", "lullaby", "whisper", "embrace", 
+  "together", "happiness", "peaceful", "kindness", "charity"
+];
+
 
 const modifier = (text) => {
-  if (!state.initialized) return { text };
+  const lowerText = text.toLowerCase()
+  const words = lowerText.split(/\s+/)
+  let conflictCount = 0
+  let calmingCount = 0
 
-  // 1. NGO Tracking (AI Side)
-  const lowerText = text.toLowerCase();
-  let cCount = 0;
-  lowerText.split(/\s+/).forEach(w => {
-    const fw = w.replace(/^[^\w]+|[^\w]+$/g, '');
-    if (conflictWords.includes(fw)) cCount++;
-  });
+  words.forEach(word => {
+    const fixedWord = word.replace(/^[^\w]+|[^\w]+$/g, '')
+    if (conflictWords.includes(fixedWord)) {
+      conflictCount++
+    }
+    if (calmingWords.includes(fixedWord)) {
+      calmingCount++
+    }
+  })
 
-  if (cCount >= 3) {
-    state.heat += 1;
-    state.storyTemperature = Math.min(state.maximumTemperature, state.storyTemperature + 1);
+  if (conflictCount > 0) {
+    state.heat += conflictCount * state.modelIncreaseHeatImpact
+    if (conflictCount >= state.threshholdModelIncreaseTemperature){
+       state.storyTemperature += state.modelIncreaseTemperatureImpact
+       log(`Detected ${conflictCount} conflict words (AI). Increasing heat & temperature.`)
+    }
+    else{
+      log(`Detected ${conflictCount} conflict words (AI). Increasing heat.`)
+    }
+  }
+  
+  if (calmingCount > 0) {
+    state.heat -= calmingCount * state.modelDecreaseHeatImpact
+    if (calmingCount >= state.threshholdModelDecreaseTemperature){
+       state.storyTemperature -= state.modelDecreaseTemperatureImpact
+       log(`Detected ${calmingCount} calming words (AI). Decreasing heat & temperature.`)
+    }
+    else{
+      log(`Detected ${calmingCount} calming words (AI). Decreasing heat.`)
+    }
   }
 
-  // 2. Update FrontMemory/Dashboard
-  state.memory.frontMemory = (state.roll?.action === info.actionCount - 1) ? state.roll.frontMemory : "";
-  
-  let dash = storyCards.find(c => c.title === "SYSTEM: Dashboard");
-  let status = `HEAT: ${state.heat} | TEMP: ${state.storyTemperature} | ACTION: ${info.actionCount}`;
-  if (dash) { dash.entry = status; } 
-  else { addStoryCard("SYSTEM: Dashboard", status, "system"); }
+  if (state.storyTemperature > state.trueMaximumTemperature){
+    state.storyTemperature = state.trueMaximumTemperature
+    log("Temperature over maximum, recalibrating...")
+  }
 
-  // IMPORTANT: Do NOT manually call AutoCards() here. 
-  // InnerSelf("output") handles the return logic for you.
-  return { text };
-};
-modifier(text);
+  if (state.storyTemperature <= 0){
+    state.storyTemperature = 1
+    log("Temperature under minimum, recalibrating...")
+  }
+
+
+  // if (state.memory.authorsNote == state.originalAuthorsNote){
+  //   state.memory.authorsNote = state.authorsNoteStorage
+  // }
+
+  log("Heat: " + state.heat)
+  log("Temperature: " + state.storyTemperature)
+  return { text }
+}
+// Don't modify this part
+modifier(text)
+
+/* === STORY ENGINE TRACKER === */
+
+const phase = state.originalAuthorsNote
+  ? state.originalAuthorsNote.split(".")[0]
+  : "Unknown"
+
+const status =
+`Heat: ${state.heat ?? 0}
+Temperature: ${state.storyTemperature ?? 1}
+Phase: ${phase}
+Turn: ${info.actionCount}
+Overheat: ${state.overheatMode ?? false}
+Cooldown: ${state.cooldownMode ?? false}`
+
+let tracker = storyCards.find(c => c.title === "SYSTEM: Story Engine")
+
+if (tracker) {
+  tracker.entry = status
+} else {
+  addStoryCard("SYSTEM: Story Engine", status, "system")
+}
