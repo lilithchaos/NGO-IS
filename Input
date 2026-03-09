@@ -56,7 +56,9 @@ const conflictWords = ["attack", "stab", "destroy", "break", "steal", "ruin", "b
 const calmingWords = ["calm", "rest", "relax", "meditate", "sleep", "comfort", "hug", "smile", "forgive", "mend", "repair", "plant", "sing", "dance", "celebrate", "collaborate", "share", "give", "donate", "protect", "shelter", "trust", "hope", "dream", "revive", "eat", "drink", "balance", "cheer", "laugh", "play", "build", "bake", "craft", "cook", "empathize", "apologize", "befriend", "admire", "sympathize", "thank", "appreciate", "cherish", "love", "pet", "respect", "restore", "guide", "teach", "learn", "daydream", "wander", "explore", "discover", "reflect", "happy", "joy", "kind", "heal", "help", "assist"]
 
 const modifier = (text) => {
+  if (!state.originalAuthorsNote) {
   state.originalAuthorsNote = ""
+}
 
   if (state.heat == undefined){
     state.heat = state.initialHeatValue
@@ -94,7 +96,7 @@ const modifier = (text) => {
     }
     
     if (calmingCount > 0) {
-      state.heat -= conflictCount * state.playerDecreaseHeatImpact
+      state.heat -= calmingCount * state.playerDecreaseHeatImpact
       if (calmingCount >= state.threshholdPlayerDecreaseTemperature){
         state.storyTemperature -= calmingCount * state.playerDecreaseTemperatureImpact
         log(`Detected ${calmingCount} calming words (Player). Decreasing heat & temperature.`)
