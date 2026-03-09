@@ -1,8 +1,0 @@
-/* === NGO GLOBAL CONFIG === */
-function randomint(min, max) {
-  return Math.floor(Math.random() * (max - Math.ceil(min) + 1)) + Math.ceil(min);
-}
-
-// Global Trigger Lists (Using your preferred updated list)
-const conflictWords = ["attack","stab","destroy","break","steal","ruin","burn","smash","sabotage","shoot","punch","hit","slap","scream","yell","gun","pistol","rifle","bullet","ammo","shotgun","firearm","blast","kill","slay","blood","bleed","bleeding","gore","wound","pain","dying","die","perish","rage","anger","betray","revenge","drug","cocaine","heroin","needle","scam","theft","crime","felony","arrest","handcuffs","police","cop","murder","execution","deadly"];
-const calmingWords = ["calm","rest","relax","meditate","sleep","comfort","hug","smile","forgive","mend","repair","protect","shelter","trust","hope","eat","drink","balance","laugh","apologize","befriend","thank","appreciate","love","pet","respect","restore","heal","help","assist","romance","affection","flirt","cuddle","care","gentle","soft","tender","kiss","reassure"];
