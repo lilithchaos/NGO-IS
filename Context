@@ -1,32 +1,36 @@
+InnerSelf("context");
+
 const modifier = (text) => {
 
-if (!state.initialized){
+  /* === INITIALIZE === */
 
-state.phaseNote = ""
-state.innerSelfNote = ""
+  if (!state.initialized){
 
-state.initialized = true
-}
+    state.phaseNote = "[Story Phase: Introduction]"
 
-/* Capture InnerSelf note */
-state.innerSelfNote = state.memory.authorsNote || ""
+    state.initialized = true
+  }
 
-/* Ensure phase note exists */
-if (!state.phaseNote){
-state.phaseNote = "[Story Phase: Introduction]"
-}
+  /* === ENSURE PHASE NOTE EXISTS === */
 
-/* Merge Phase + InnerSelf */
-state.memory.authorsNote =
-state.phaseNote + "\n" + state.innerSelfNote
+  if (!state.phaseNote){
+    state.phaseNote = "[Story Phase: Introduction]"
+  }
 
-/* Guard: ensure phase note is never removed */
-if (!state.memory.authorsNote.includes(state.phaseNote)){
-state.memory.authorsNote =
-state.phaseNote + "\n" + state.innerSelfNote
-}
+  /* === PRESERVE INNERSELF AUTHOR'S NOTE === */
 
-return { text }
+  let innerSelfNote = state.memory.authorsNote || ""
+
+  /* === ADD PHASE NOTE WITHOUT OVERWRITING INNERSELF === */
+
+  if (!innerSelfNote.includes(state.phaseNote)){
+
+    state.memory.authorsNote =
+      state.phaseNote + "\n" + innerSelfNote
+
+  }
+
+  return { text }
 
 }
 
