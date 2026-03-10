@@ -27,28 +27,23 @@ const conflictWords = [
 "backstab","doublecross","terrorize","defy","retaliate","suffer",
 "torment","scar","bruise","fracture","bleed","eruption",
 "butcher","decimate","defile","extinguish","mutilate",
-"pillage","ravage","razed","rupture","scourge","subjugate","unleash","wreck", "duel","clash","skewer","impale","cleave","hack","hew","maul","pummel","bash",
+"pillage","ravage","razed","rupture","scourge","subjugate","unleash","wreck",
+"duel","clash","skewer","impale","cleave","hack","hew","maul","pummel","bash",
 "pierce","parry","lunge","thrust","gouge","behead","decapitate","skirmish",
 "charge","besiege","ravage","sack","torch","conquer","usurp","treachery",
 "betray","traitor","bloodshed","warcry","roar",
-
 "punch","kick","elbow","headbutt","slam","tackle","brawl","scrap","shove",
 "grapple","chokehold","knockout","knockdown","jump","mug","extort","smack",
 "stomp","drag",
-
 "shoot","gunfire","reload","snipe","bombard","shell","breach","storm","assault",
 "advance","retreat","flank","suppress","engage","target","neutralize",
 "deploy","incursion","infiltrate","firefight",
-
 "laser","plasma","disintegrate","override","purge","eradicate","incinerate",
 "overcharge","malfunction","scramble","jam","lockon",
-
 "argue","yell","scream","rage","hate","resent","insult","mock","taunt",
 "bully","harass","abuse","betrayal","revenge","wrathful","furious","hostile",
-
 "eruption","quake","storm","devastate","wreck","catastrophe","panic","mayhem",
 "havoc","apocalypse",
-
 "rip","tear","snap","crack","split","pound","lash","grab","throw","hurl"
 ]
 
@@ -99,7 +94,6 @@ const modifier = (text) => {
 
   })
 
-
   /* === CONFLICT DETECTION === */
 
   if (conflictCount > 0){
@@ -109,7 +103,6 @@ const modifier = (text) => {
     if (conflictCount >= state.threshholdModelIncreaseTemperature){
 
       state.storyTemperature += state.modelIncreaseTemperatureImpact
-
       log(`Detected ${conflictCount} conflict words (AI). Increasing heat & temperature.`)
 
     } else {
@@ -120,7 +113,6 @@ const modifier = (text) => {
 
   }
 
-
   /* === CALM DETECTION === */
 
   if (calmingCount > 0){
@@ -130,7 +122,6 @@ const modifier = (text) => {
     if (calmingCount >= state.threshholdModelDecreaseTemperature){
 
       state.storyTemperature -= state.modelDecreaseTemperatureImpact
-
       log(`Detected ${calmingCount} calming words (AI). Decreasing heat & temperature.`)
 
     } else {
@@ -141,6 +132,14 @@ const modifier = (text) => {
 
   }
 
+  /* === HEAT LIMITS === */
+
+  if (state.heat < 0){
+
+    state.heat = 0
+    log("Heat under minimum, recalibrating...")
+
+  }
 
   /* === TEMPERATURE LIMITS === */
 
@@ -158,7 +157,6 @@ const modifier = (text) => {
 
   }
 
-
   /* === STORY ENGINE TRACKER === */
 
   const phase = state.originalAuthorsNote
@@ -172,7 +170,6 @@ Phase: ${phase}
 Turn: ${info.actionCount}
 Overheat: ${state.overheatMode ?? false}
 Cooldown: ${state.cooldownMode ?? false}`
-
 
   let tracker = storyCards.find(c => c.title === "SYSTEM: Story Engine")
 
