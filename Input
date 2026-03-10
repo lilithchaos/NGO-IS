@@ -1,7 +1,12 @@
+/* === INNERSELF INPUT HOOK === */
+if (typeof InnerSelf === "function") {
+  InnerSelf("input")
+}
+
 /* === STORY ARC CONFIGURATION === */
 
-state.initialHeatValue = 0
-state.initialTemperatureValue = 1
+state.initialHeatValue = 6
+state.initialTemperatureValue = 6
 state.temperatureIncreaseChance = 15
 
 state.heatIncreaseValue = 1
@@ -9,10 +14,20 @@ state.temperatureIncreaseValue = 1
 
 state.playerIncreaseHeatImpact = 2
 state.playerDecreaseHeatImpact = 2
-state.playerIncreaseTemperatureImpact = 1
+state.playerIncreaseTemperatureImpact = 2
 state.playerDecreaseTemperatureImpact = 1
 state.threshholdPlayerIncreaseTemperature = 2
 state.threshholdPlayerDecreaseTemperature = 2
+
+state.modelIncreaseHeatImpact = 2
+state.modelDecreaseHeatImpact = 2
+state.modelIncreaseTemperatureImpact = 2
+state.modelDecreaseTemperatureImpact = 1
+state.threshholdModelIncreaseTemperature = 3
+state.threshholdModelDecreaseTemperature = 3
+
+state.maximumTemperature = 12
+state.trueMaximumTemperature = 15
 
 state.minimumTemperature = 1
 state.trueMinimumTemperature = 1
@@ -29,7 +44,7 @@ state.randomExplosionHeatIncreaseValue = 5
 state.randomExplosionTemperatureIncreaseValue = 2
 
 
-/* DONT MODIFY ANYTHING BEYOND THIS POINT */
+/* === INTERNAL FUNCTIONS === */
 
 function randomint(min, max) {
   min = Math.ceil(min)
@@ -37,21 +52,76 @@ function randomint(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-const conflictWords = ["attack","stab","destroy","break","steal","ruin","burn","smash","sabotage","disrupt","vandalize","overthrow","assassinate","plunder","rob","ransack","raid","hijack","detonate","explode","ignite","collapse","demolish","shatter","strike","slap","obliterate","annihilate","corrupt","infect","poison","curse","hex","summon","conjure","mutate","provoke","riot","revolt","mutiny","rebel","resist","intimidate","blackmail","manipulate","brainwash","lie","cheat","swindle","disarm","fire","hack","overload","flood","drown","rot","dissolve","slaughter","terminate","execute","drama","conflict","evil","kill","slay","defeat","fight","doom","slice","pain","dying","die","perish","blood"]
+const conflictWords = [
+"attack","stab","destroy","break","steal","ruin","burn","smash","sabotage","disrupt",
+"vandalize","overthrow","assassinate","plunder","rob","ransack","raid","hijack",
+"detonate","explode","ignite","collapse","demolish","shatter","strike","slap",
+"obliterate","annihilate","corrupt","infect","poison","curse","hex","summon",
+"conjure","mutate","provoke","riot","revolt","mutiny","rebel","resist",
+"intimidate","blackmail","manipulate","brainwash","lie","cheat","swindle",
+"disarm","fire","hack","overload","flood","drown","rot","dissolve",
+"slaughter","terminate","execute","drama","conflict","evil","kill","slay",
+"defeat","fight","doom","slice","pain","dying","die","perish","blood",
+"ambush","betray","assault","threaten","menace","harass","bully",
+"coerce","extort","torture","maim","wound","injure","cripple","choke",
+"strangle","shoot","bomb","invade","besiege","conquer","dominate",
+"oppress","persecute","hunt","track","pursue","capture","kidnap",
+"imprison","enslave","deceive","frame","scam","counterfeit","forge",
+"threat","vengeance","revenge","wrath","rage","fury","hatred",
+"malice","hostile","hostility","aggression","clash","brawl",
+"duel","skirmish","war","battle","combat","siege","destruction",
+"devastate","crush","eradicate","eliminate","suppress","undermine",
+"backstab","doublecross","terrorize","defy","retaliate","suffer",
+"torment","scar","bruise","fracture","bleed","eruption",
+"butcher","decimate","defile","extinguish","mutilate",
+"pillage","ravage","razed","rupture","scourge","subjugate","unleash","wreck", "duel","clash","skewer","impale","cleave","hack","hew","maul","pummel","bash",
+"pierce","parry","lunge","thrust","gouge","behead","decapitate","skirmish",
+"charge","besiege","ravage","sack","torch","conquer","usurp","treachery",
+"betray","traitor","bloodshed","warcry","roar",
 
-const calmingWords = ["calm","rest","relax","meditate","sleep","comfort","hug","smile","forgive","mend","repair","plant","sing","dance","celebrate","collaborate","share","give","donate","protect","shelter","trust","hope","dream","revive","eat","drink","balance","cheer","laugh","play","build","bake","craft","cook","empathize","apologize","befriend","admire","sympathize","thank","appreciate","cherish","love","pet","respect","restore","guide","teach","learn","daydream","wander","explore","discover","reflect","happy","joy","kind","heal","help","assist"]
+"punch","kick","elbow","headbutt","slam","tackle","brawl","scrap","shove",
+"grapple","chokehold","knockout","knockdown","jump","mug","extort","smack",
+"stomp","drag",
+
+"shoot","gunfire","reload","snipe","bombard","shell","breach","storm","assault",
+"advance","retreat","flank","suppress","engage","target","neutralize",
+"deploy","incursion","infiltrate","firefight",
+
+"laser","plasma","disintegrate","override","purge","eradicate","incinerate",
+"overcharge","malfunction","scramble","jam","lockon",
+
+"argue","yell","scream","rage","hate","resent","insult","mock","taunt",
+"bully","harass","abuse","betrayal","revenge","wrathful","furious","hostile",
+
+"eruption","quake","storm","devastate","wreck","catastrophe","panic","mayhem",
+"havoc","apocalypse",
+
+"rip","tear","snap","crack","split","pound","lash","grab","throw","hurl"
+]
+
+const calmingWords = [
+"calm","rest","relax","meditate","sleep","comfort","hug","smile","forgive",
+"mend","repair","plant","sing","dance","celebrate","collaborate","share",
+"give","donate","protect","shelter","trust","hope","dream","revive","eat",
+"drink","balance","cheer","laugh","play","build","bake","craft","cook",
+"empathize","apologize","befriend","admire","sympathize","thank",
+"appreciate","cherish","love","pet","respect","restore","guide","teach",
+"learn","daydream","wander","explore","discover","reflect","happy","joy",
+"kind","heal","help","assist"
+]
+
+
+/* === MAIN INPUT MODIFIER === */
 
 const modifier = (text) => {
 
-  state.originalAuthorsNote = ""
-
-  if (state.heat == undefined){
+  if (state.heat === undefined) {
     state.heat = state.initialHeatValue
     state.cooldownMode = false
     state.overheatMode = false
   }
 
-  if (state.storyTemperature == undefined){
+  if (state.storyTemperature === undefined) {
     state.storyTemperature = state.initialTemperatureValue
   }
 
@@ -62,133 +132,113 @@ const modifier = (text) => {
   let calmingCount = 0
 
   words.forEach(word => {
-
     const fixedWord = word.replace(/^[^\w]+|[^\w]+$/g,'')
-
-    if (conflictWords.includes(fixedWord)){
-      conflictCount++
-    }
-
-    if (calmingWords.includes(fixedWord)){
-      calmingCount++
-    }
-
+    if (conflictWords.includes(fixedWord)) conflictCount++
+    if (calmingWords.includes(fixedWord)) calmingCount++
   })
 
 
-  if (state.cooldownMode == false){
+  /* PLAYER EFFECTS */
 
-    if (conflictCount > 0){
+  if (!state.cooldownMode) {
+
+    if (conflictCount > 0) {
 
       state.heat += conflictCount * state.playerIncreaseHeatImpact
 
-      if (conflictCount >= state.threshholdPlayerIncreaseTemperature){
-
+      if (conflictCount >= state.threshholdPlayerIncreaseTemperature) {
         state.storyTemperature += conflictCount * state.playerIncreaseTemperatureImpact
-        log(`Detected ${conflictCount} conflict words (Player). Increasing heat & temperature.`)
-
+        log(`Player conflict detected (${conflictCount})`)
       }
-      else{
 
-        log(`Detected ${conflictCount} conflict words (Player). Increasing heat.`)
-
-      }
     }
 
+    if (calmingCount > 0) {
 
-    if (calmingCount > 0){
+      state.heat -= calmingCount * state.playerDecreaseHeatImpact
 
-      state.heat -= calmingCount * state.playerDecreaseHeatImpact   // FIXED
-
-      if (calmingCount >= state.threshholdPlayerDecreaseTemperature){
-
+      if (calmingCount >= state.threshholdPlayerDecreaseTemperature) {
         state.storyTemperature -= calmingCount * state.playerDecreaseTemperatureImpact
-        log(`Detected ${calmingCount} calming words (Player). Decreasing heat & temperature.`)
-
+        log(`Player calming detected (${calmingCount})`)
       }
-      else{
 
-        log(`Detected ${calmingCount} calming words (Player). Decreasing heat.`)
-
-      }
     }
+
   }
 
+  /* PREVENT NEGATIVE HEAT */
 
-  /* Prevent negative heat */
-  if (state.heat < 0){
+  if (state.heat < 0) {
     state.heat = 0
   }
 
+  /* RANDOM CHAOS EVENT */
 
   state.chance = randomint(1,100)
 
-  if (state.chance <= state.randomExplosionChance){
+  if (state.chance <= state.randomExplosionChance) {
 
     state.heat += state.randomExplosionHeatIncreaseValue
     state.storyTemperature += state.randomExplosionTemperatureIncreaseValue
 
-    log("!WARNING! Explosion Occured! (+"+state.randomExplosionHeatIncreaseValue+" heat) (+"+state.randomExplosionTemperatureIncreaseValue+" temperature)")
+    log("Random escalation event triggered")
 
   }
 
 
-  if(state.cooldownMode == false && state.overheatMode == false){
+  /* HEAT BUILDUP */
+
+  if (!state.cooldownMode && !state.overheatMode) {
 
     state.heat += state.heatIncreaseValue
-    log("Heat: "+state.heat)
 
   }
 
 
-  state.chance = randomint(1,state.temperatureIncreaseChance)
+  /* TEMPERATURE INCREASE */
 
-  if (state.chance <= state.heat){
+  state.chance = randomint(1, state.temperatureIncreaseChance)
+
+  if (state.chance <= state.heat) {
 
     state.heat = 0
     state.storyTemperature += state.temperatureIncreaseValue
 
-    log("Temperature Increased. Temperature is now "+state.storyTemperature)
-
   }
 
 
-  if (state.storyTemperature >= state.maximumTemperature){
+  /* OVERHEAT TRIGGER */
 
-    if (state.cooldownMode == false && state.overheatMode == false){
+  if (state.storyTemperature >= state.maximumTemperature) {
+
+    if (!state.cooldownMode && !state.overheatMode) {
 
       state.overheatMode = true
       state.overheatTurnsLeft = state.overheatTimer
 
-      log("Overheat Mode Activated")
-
     }
+
   }
 
 
-  if (state.cooldownMode == true){
+  /* COOLDOWN + OVERHEAT SYSTEM */
 
-    state.cooldownTurnsLeft --
-    log("Cooldown Timer: "+state.cooldownTurnsLeft)
+  if (state.cooldownMode) {
 
+    state.cooldownTurnsLeft--
     state.storyTemperature -= state.cooldownRate
 
-    if(state.cooldownTurnsLeft <= 0){
-
+    if (state.cooldownTurnsLeft <= 0) {
       state.cooldownMode = false
-      log("Cooldown Mode Disabled")
-
     }
 
-  }
-  else{
+  } else {
 
-    if(state.overheatMode == true){
+    if (state.overheatMode) {
 
-      state.overheatTurnsLeft --
-      log("Overheat Timer: "+state.overheatTurnsLeft)
+      state.overheatTurnsLeft--
 
-      if (state.overheatTurnsLeft <= 0){
+      if (state.overheatTurnsLeft <= 0) {
 
         state.storyTemperature -= state.overheatReductionForTemperature
         state.heat -= state.overheatReductionForHeat
@@ -197,103 +247,68 @@ const modifier = (text) => {
         state.cooldownMode = true
         state.cooldownTurnsLeft = state.cooldownTimer
 
-        log("Cooldown Mode Activated")
-
       }
+
     }
+
   }
 
 
-  if (state.storyTemperature > state.trueMaximumTemperature){
+  /* TEMPERATURE LIMITS */
 
+  if (state.storyTemperature > state.trueMaximumTemperature) {
     state.storyTemperature = state.trueMaximumTemperature
-    log("Temperature over maximum, recalibrating...")
-
   }
 
-
-  if (state.storyTemperature < state.trueMinimumTemperature){   // FIXED
-
+  if (state.storyTemperature < state.trueMinimumTemperature) {
     state.storyTemperature = state.trueMinimumTemperature
-    log("Temperature under minimum, recalibrating...")
-
   }
 
 
-  /* STORY PHASE PROMPTS (UNCHANGED) */
+  /* STORY PHASE PROMPTS */
 
-  if (state.cooldownMode == false){
+  if (!state.cooldownMode) {
 
-    log("cooldownMode false, deploying prompt")
-
-    if (state.storyTemperature == 1){
-      state.originalAuthorsNote = "Story Phase: Introduction. Introduce characters and locations. There should be no conflict or tension in the story."
+    if (state.storyTemperature <= 2) {
+      state.originalAuthorsNote = "Story Phase: Introduction. Establish characters, setting, and plot hooks."
     }
 
-    if (state.storyTemperature == 2){
-      state.originalAuthorsNote = "Story Phase: Introduction. Introduce characters, locations, and plot hooks. There should be only a little conflict."
+    else if (state.storyTemperature <= 5) {
+      state.originalAuthorsNote = "Story Phase: Early Rising Action. Minor conflicts appear."
     }
 
-    if (state.storyTemperature == 3){
-      state.originalAuthorsNote = "Story Phase: Introduction. Minor conflicts only."
+    else if (state.storyTemperature <= 8) {
+      state.originalAuthorsNote = "Story Phase: Rising Action. Moderate conflicts and plot developments."
     }
 
-    if (state.storyTemperature == 4){
-      state.originalAuthorsNote = "Story Phase: Introduction. Minor conflicts only."
+    else if (state.storyTemperature <= 11) {
+      state.originalAuthorsNote = "Story Phase: High Rising Action. Conflicts intensify."
     }
 
-    if (state.storyTemperature == 5){
-      state.originalAuthorsNote = "Story Phase: Rising Action. Minor conflicts."
+    else {
+      state.originalAuthorsNote = "Story Phase: Climax. Major conflicts dominate the story."
     }
 
-    if (state.storyTemperature == 6){
-      state.originalAuthorsNote = "Story Phase: Rising Action. Occasional moderate conflict."
+  } else {
+
+    if (state.storyTemperature <= 3) {
+      state.originalAuthorsNote = "Story Phase: Downtime. Characters recover and reflect."
     }
 
-    if (state.storyTemperature == 7){
-      state.originalAuthorsNote = "Story Phase: Rising Action. Introduce connections to plot hooks."
+    else if (state.storyTemperature <= 7) {
+      state.originalAuthorsNote = "Story Phase: Falling Action. Conflicts begin resolving."
     }
 
-    if (state.storyTemperature == 8){
-      state.originalAuthorsNote = "Story Phase: Rising Action. Moderate hints of future conflict."
-    }
-
-    if (state.storyTemperature == 9){
-      state.originalAuthorsNote = "Story Phase: Rising Action. Move toward greater conflict."
-    }
-
-    if (state.storyTemperature == 10){
-      state.originalAuthorsNote = "Story Phase: Climax. Major conflict begins."
-    }
-
-    if (state.storyTemperature == 11){
-      state.originalAuthorsNote = "Story Phase: Climax. Push characters near their limits."
-    }
-
-    if (state.storyTemperature == 12){
-      state.originalAuthorsNote = "Story Phase: Climax. Escalate conflict."
-    }
-
-    if (state.storyTemperature == 13){
-      state.originalAuthorsNote = "Story Phase: Climax. Push characters to their limits."
-    }
-
-    if (state.storyTemperature == 14){
-      state.originalAuthorsNote = "Story Phase: Climax. Major conflict escalates."
-    }
-
-    if (state.storyTemperature == 15){
-      state.originalAuthorsNote = "Story Phase: Climax. Punish bad decisions."
-    }
-
-    if (state.storyTemperature >= 16){
-      state.originalAuthorsNote = "Story Phase: Ultimate Climax."
+    else {
+      state.originalAuthorsNote = "Story Phase: Cooling Down. High tension slowly subsides."
     }
 
   }
 
-  return {text}
+  return { text }
 
 }
 
+
+/* DO NOT MODIFY THIS LINE */
 modifier(text)
