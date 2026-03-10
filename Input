@@ -5,8 +5,8 @@ if (typeof InnerSelf === "function") {
 
 /* === STORY ARC CONFIGURATION === */
 
-state.initialHeatValue = 6
-state.initialTemperatureValue = 6
+state.initialHeatValue = 1
+state.initialTemperatureValue = 1
 state.temperatureIncreaseChance = 15
 
 state.heatIncreaseValue = 1
