@@ -1,6 +1,33 @@
 const modifier = (text) => {
-  text = text + "\n\n" + state.originalAuthorsNote
-  return { text }
+
+if (!state.initialized){
+
+state.phaseNote = ""
+state.innerSelfNote = ""
+
+state.initialized = true
+}
+
+/* Capture InnerSelf note */
+state.innerSelfNote = state.memory.authorsNote || ""
+
+/* Ensure phase note exists */
+if (!state.phaseNote){
+state.phaseNote = "[Story Phase: Introduction]"
+}
+
+/* Merge Phase + InnerSelf */
+state.memory.authorsNote =
+state.phaseNote + "\n" + state.innerSelfNote
+
+/* Guard: ensure phase note is never removed */
+if (!state.memory.authorsNote.includes(state.phaseNote)){
+state.memory.authorsNote =
+state.phaseNote + "\n" + state.innerSelfNote
+}
+
+return { text }
+
 }
 
 modifier(text)
